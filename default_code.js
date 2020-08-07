@@ -3,7 +3,7 @@
 var attack_mode=true
 setInterval(function(){
 
-  heal();
+        heal();
 	loot();
 
 	if(!attack_mode || character.rip || is_moving(character)) return;
