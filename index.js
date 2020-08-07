@@ -140,44 +140,5 @@ function avg(array) {
     return array.reduce((sum, value) => sum + value) / array.length
 }
 
-var attack_mode=true
-setInterval(function(){
-
-    if (character.mp / character.max_mp < 0.60) use('use_mp') //issue sharing cd
-    else if (character.hp / character.max_hp < 0.60) use('use_hp') //issue sharing cd
-	loot();
-
-	if(!attack_mode || character.rip || is_moving(character)) return;
-
-	var target=get_targeted_monster();
-	if(!target)
-	{
-		target=get_nearest_monster({min_xp:100,max_att:120});
-		if(target) change_target(target);
-		else
-		{
-			set_message("No Monsters");
-			return;
-		}
-	}
-	
-	if(!is_in_range(target))
-	{
-		move(
-			character.x+(target.x-character.x)/2,
-			character.y+(target.y-character.y)/2
-			);
-		// Walk half the distance
-	}
-	else if(is_in_range(target))
-	{
-		set_message("Attacking");
-		attack(target);
-	}
-
-},400); // Loops every 1/4 seconds.
-
-// Learn Javascript: https://www.codecademy.com/learn/introduction-to-javascript
-// Write your own CODE: https://github.com/kaansoral/adventureland
 
 
