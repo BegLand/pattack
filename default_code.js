@@ -1,5 +1,5 @@
 //even with 400ms, can attack smooth
-
+load_code("pattack")
 var attack_mode=true
 setInterval(function(){
 
