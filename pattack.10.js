@@ -33,19 +33,28 @@ function newUse_skill(skill,target,extra_args) {
     return _use(skill,target,extra_args)
 }
 
+const sharedCD= {
+    "regen_hp": "use_hp",
+    "regen_mp": "use_mp",
+}
+
 function _use(skill,target,extra_args) {
     /*enable target switching to last second*/targets[skill]=target;
     if (!parent.next_skill) {
         return Promise.reject("Something is strange - Wait for parent.next_skill to init")
     }
-    if (!!parent.next_skill[skill] && 
-        timingsForAttacks[skill] === parent.next_skill[skill] && 
-        mssince(parent.next_skill[skill]) < 0) 
-        return Promise.reject("cooldown: "+skill+ " "+mssince(parent.next_skill[skill])) //if we already timed on the attack time
-    if (mssince(parent.next_skill[skill]) < -700) {
-        return Promise.reject("cooldown: "+skill+ " "+mssince(parent.next_skill[skill])) 
+    let sharedcd = skill;
+    if (sharedCD[skill]) sharedcd=sharedCD[skill];
+    if (!parent.next_skill[sharedcd]) { oldUse_skill(skill,target,extra_args); return Promise.reject("No timer on this spell?")
+}
+    if (!!parent.next_skill[sharedcd] && 
+        timingsForAttacks[sharedcd] === parent.next_skill[sharedcd] && 
+        mssince(parent.next_skill[sharedcd]) < 0) 
+        return Promise.reject("cooldown: "+skill+ " "+mssince(parent.next_skill[sharedcd])) //if we already timed on the attack time
+    if (mssince(parent.next_skill[sharedcd]) < -700) {
+        return Promise.reject("cooldown: "+skill+ " "+mssince(parent.next_skill[sharedcd])) 
     }//if more than 100ms left say it's on cooldown
-    timingsForAttacks[skill] = parent.next_skill[skill] //lock function until attack changes, also remeber the timer which is what we compare with
+    timingsForAttacks[sharedcd] = parent.next_skill[sharedcd] //lock function until attack changes, also remeber the timer which is what we compare with
     return _pTiming(skill,target,extra_args)
 }
 
@@ -139,6 +148,3 @@ function std(array) {
 function avg(array) {
     return array.reduce((sum, value) => sum + value) / array.length
 }
-
-
-
