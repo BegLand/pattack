@@ -79,6 +79,8 @@ window.use_skill = newUse_skill
 
 function _pTiming(skill,target,extra_args) {
     const nowTime = new Date().getTime()
+    
+    sharedCD[skill] && skill = sharedCD[skill] 
 
     const cooldownTime = parent.next_skill[skill].getTime()
     const av = avg(samplesTimes)
