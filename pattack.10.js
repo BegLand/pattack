@@ -23,8 +23,9 @@ if (!samplesTimes) {
 
 //attack = newAttack
 const timingsForAttacks = {};
+const safeCoefficient = 2 //should be higher for low std, and lower for high std. low std= <15, high std >15
 const targets = {}; //enable target switching to last second
-const limits = {attack:7}
+const limits = {attack:7} //should be safe up to 15. 
 
 function newAttack(target) {
     return _use("attack",target)
@@ -73,8 +74,6 @@ function _pTiming(skill,target,extra_args) {
 
     const min = av - st; 
     const max = av + st
-
-    const safeCoefficient = 2
 
     const amin = Math.min(0, Math.max(-300, (min - (safeCoefficient*st)))) //make sure it's between good pings, -300 and 0, things get wierd when ping > attackspeed
     const amax = Math.min(0, (max + (safeCoefficient*st))) 
