@@ -1,4 +1,5 @@
 const DEBUGLOG=true;
+game_log("pattack loaded")
 const savedNeedle = get('pattackNeedle' + character.id);
 var needle = savedNeedle || 0
 const savedSample = get('pattack' + character.id)
