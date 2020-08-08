@@ -43,31 +43,34 @@ function newUse_skill(skill,target,extra_args) {
     return _use(skill,target,extra_args)
 }
 
-const sharedCD= {
-    //use skill, main tracker
-    "regen_hp": "use_hp",
-    "regen_mp": "use_mp", 
-    "3shot": "attack",
-    "5shot": "attack"
+function getCD(skill) {
+    const { share } = G.skills[skill]
+    if (share) {
+        return parent.next_skill[share]
+    } else {
+        return parent.next_skill[skill]
+    }
 }
-
+function getCDName(skill) {
+    return G.skills[skill].share || skill
+}
 function _use(skill,target,extra_args) {
     /*enable target switching to last second*/targets[skill]=target;
     if (!parent.next_skill) {
         return Promise.reject("Something is strange - Wait for parent.next_skill to init")
     }
-    let sharedcd = skill;
-    if (sharedCD[skill]) sharedcd=sharedCD[skill];
-    if (!parent.next_skill[sharedcd]) { oldUse_skill(skill,target,extra_args); return Promise.reject("No timer on this spell?")
-}
-    if (!!parent.next_skill[sharedcd] && 
-        timingsForAttacks[sharedcd] === parent.next_skill[sharedcd] && 
-        mssince(parent.next_skill[sharedcd]) < 0) 
-        return Promise.reject("cooldown: "+skill+ " "+mssince(parent.next_skill[sharedcd])) //if we already timed on the attack time
-    if (mssince(parent.next_skill[sharedcd]) < -700) {
-        return Promise.reject("cooldown: "+skill+ " "+mssince(parent.next_skill[sharedcd])) 
+    const cooldownTime = getCD(skill)
+    if (!cooldownTime) { 
+        oldUse_skill(skill,target,extra_args); return Promise.reject("No timer on this spell?")
+    }
+    if (!!cooldownTime && 
+        timingsForAttacks[sharedcd] === cooldownTime && 
+        mssince(cooldownTime) < 0) 
+        return Promise.reject("cooldown: "+skill+ " "+mssince(cooldownTime)) //if we already timed on the attack time
+    if (mssince(cooldownTime) < -700) {
+        return Promise.reject("cooldown: "+skill+ " "+mssince(cooldownTime)) 
     }//if more than 100ms left say it's on cooldown
-    timingsForAttacks[sharedcd] = parent.next_skill[sharedcd] //lock function until attack changes, also remeber the timer which is what we compare with
+    timingsForAttacks[getCDName(skill)] = cooldownTime //lock function until attack changes, also remeber the timer which is what we compare with
     return _pTiming(skill,target,extra_args)
 }
 
@@ -80,11 +83,8 @@ window.use_skill = newUse_skill
 function _pTiming(skill,target,extra_args) {
     const nowTime = new Date().getTime()
     
-    if(sharedCD[skill]) {
-        skill = sharedCD[skill] 
-    }
-	
-    const cooldownTime = parent.next_skill[skill].getTime()
+    const cooldownTime = getCD(skill)
+    
     const av = avg(samplesTimes)
     const st = std(samplesTimes)
 
