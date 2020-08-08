@@ -1,5 +1,15 @@
+//settings
 const DEBUGLOG=true;
+const reset=false
+const timingsForAttacks = {};
+const safeCoefficient = 2 //should be higher for low std, and lower for high std. low std= <15, high std >15
+const limits = {attack:7} //should be safe up to 15. 
+const samples = 50 //the higher the more rigid to lag spikes.
+
+
 game_log("pattack loaded")
+
+
 const savedNeedle = get('pattackNeedle' + character.id);
 var needle = savedNeedle || 0
 const savedSample = get('pattack' + character.id)
@@ -13,8 +23,8 @@ if (samplesTimes) {
         }
     }
 }
-if (!samplesTimes) {
-    samplesTimes = new Array(50) //the lower this number, the more responsive 
+if (reset || !samplesTimes) {
+    samplesTimes = new Array(samples) //the lower this number, the more responsive 
     const spans = [-1*60, -1*30]
     const interval = spans[1] - spans[0]
     for(let i = 0; i < 100; i++) {
@@ -23,10 +33,8 @@ if (!samplesTimes) {
 }
 
 //attack = newAttack
-const timingsForAttacks = {};
-const safeCoefficient = 2 //should be higher for low std, and lower for high std. low std= <15, high std >15
 const targets = {}; //enable target switching to last second
-const limits = {attack:7} //should be safe up to 15. 
+
 
 function newAttack(target) {
     return _use("attack",target)
