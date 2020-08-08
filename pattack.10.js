@@ -35,8 +35,9 @@ function newUse_skill(skill,target,extra_args) {
 }
 
 const sharedCD= {
+    //use skill, main tracker
     "regen_hp": "use_hp",
-    "regen_mp": "use_mp",
+    "regen_mp": "use_mp", 
 }
 
 function _use(skill,target,extra_args) {
