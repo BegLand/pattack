@@ -47,6 +47,8 @@ const sharedCD= {
     //use skill, main tracker
     "regen_hp": "use_hp",
     "regen_mp": "use_mp", 
+    "3shot": "attack",
+    "5shot": "attack"
 }
 
 function _use(skill,target,extra_args) {
