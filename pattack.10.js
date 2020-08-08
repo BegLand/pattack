@@ -64,7 +64,7 @@ function _use(skill,target,extra_args) {
         oldUse_skill(skill,target,extra_args); return Promise.reject("No timer on this spell?")
     }
     if (!!cooldownTime && 
-        timingsForAttacks[sharedcd] === cooldownTime && 
+        timingsForAttacks[getCDName(skill)] === cooldownTime && 
         mssince(cooldownTime) < 0) 
         return Promise.reject("cooldown: "+skill+ " "+mssince(cooldownTime)) //if we already timed on the attack time
     if (mssince(cooldownTime) < -700) {
