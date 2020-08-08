@@ -44,6 +44,7 @@ function newUse_skill(skill,target,extra_args) {
 }
 
 function getCD(skill) {
+    if (!G.skills[skill]) return parent.next_skill[skill]
     const { share } = G.skills[skill]
     if (share) {
         return parent.next_skill[share]
