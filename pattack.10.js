@@ -83,7 +83,7 @@ window.use_skill = newUse_skill
 function _pTiming(skill,target,extra_args) {
     const nowTime = new Date().getTime()
     
-    const cooldownTime = getCD(skill)
+    const cooldownTime = getCD(skill).getTime()
     
     const av = avg(samplesTimes)
     const st = std(samplesTimes)
