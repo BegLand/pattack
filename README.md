@@ -4,5 +4,9 @@ Just add to your existing scripts like the following.
 
 Should override standard attack and use_skill.
 
-Do not use can_attack(), use is_in_range() only.
-Do not break on measured cooldowns or influence cooldowns.
+Do not use any cooldown management code.
+That means, no reduce_cooldowns
+No is_on_cooldown()
+No can_attack()
+
+Only range check allowed
