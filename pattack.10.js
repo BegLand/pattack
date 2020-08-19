@@ -1,15 +1,14 @@
 //settings
 const DEBUGLOG=true;
 const reset=false
-const timingsForAttacks = {};
-const safeCoefficient = 2 //should be higher for low std, and lower for high std. low std= <15, high std >15
-const limits = {attack:7} //should be safe up to 15. 
-const samples = 50 //the higher the more rigid to lag spikes.
+const safeCoefficient = 2 // recommended value: 1-2.5 - should be higher for low std, and lower for high std. low std= <15, high std >15
+const limits = {attack:7} //recommended value: 5-10 - Sends Y attacks within a interval. Should be safe up to 15, but should revise if you have a high attack speed. 
+const samples = 50 // recommended value: 50-100 - the higher the value, the more rigid to lag spikes. Should be safe with both 15-500.
 
 
 game_log("pattack loaded")
 
-
+const timingsForAttacks = {};
 const savedNeedle = get('pattackNeedle' + character.id);
 var needle = savedNeedle || 0
 const savedSample = get('pattack' + character.id)
