@@ -111,32 +111,32 @@ function _pTiming(skill,target,extra_args) {
     var results = new Array(attempts)
 	return new Promise((resolve,reject) => {
 	    for (let i = 0; i < results.length; i++) {       
-		const inc = i * spanPiece
-		const timing = (spamTimeStart + inc)
-		const value = (cooldownTime-timing) * -1
-		const timeout = timing-nowTime
-		const cb = async () => {
-		    try {
-			results[i] = await _use_skill(skill,targets[skill],extra_args)
-			resolve();
-			DEBUGLOG && console.log(`Success ${skill}: \tattempt ${i} out of ${results.length} sent. Maximum allowed attempts: ${limits[skill]} \tvalue ${Math.floor(value)} \t(ADJUSTED FROM ${Math.floor(timeout)}) \t${Math.floor(inc)} MS:${spanPiece} \tDiff ${Math.floor(max - min)} \tmin ${Math.floor(min)} \tmax ${Math.floor(max)} \tav${Math.floor(av)} \tstd${Math.floor(st)}`)
-			record(value)
-			results[i] = true
-		    } catch (e) {
-			results[i] = false
-			if (i === attempts - 1) { //if last attempt
-			    if (results.findIndex(v => v) === -1) {//and no attempt succeeded 
-				if (e.reason === 'cooldown') {
-				    reject();
-				    record(value)
-				}
-				timingsForAttacks[skill] = new Date(0);
-			    }
-			}
-		    }
-		}
-		setTimeout(cb,timeout)
-		results[i]=cb
+            const inc = i * spanPiece
+            const timing = (spamTimeStart + inc)
+            const value = (cooldownTime-timing) * -1
+            const timeout = timing-nowTime
+            const cb = async () => {
+                try {
+                    results[i] = await _use_skill(skill,targets[skill],extra_args)
+                    resolve();
+                    DEBUGLOG && console.log(`Success ${skill}: \tattempt ${i} out of ${results.length} sent. Maximum allowed attempts: ${limits[skill]} \tvalue ${Math.floor(value)} \t(ADJUSTED FROM ${Math.floor(timeout)}) \t${Math.floor(inc)} MS:${spanPiece} \tDiff ${Math.floor(max - min)} \tmin ${Math.floor(min)} \tmax ${Math.floor(max)} \tav${Math.floor(av)} \tstd${Math.floor(st)}`)
+                    record(value)
+                    results[i] = true
+                } catch (e) {
+                    results[i] = false
+                    if (i === attempts - 1) { //if last attempt
+                        if (results.findIndex(v => !!v) === -1) {//and no attempt succeeded 
+                            if (e.reason === 'cooldown') {
+                                reject();
+                                record(value)
+                            }
+                        timingsForAttacks[skill] = new Date(0);
+                        }
+                    }
+                }
+            }
+            setTimeout(cb,timeout)
+            results[i]=cb
 	    }
     })
 }
