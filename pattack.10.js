@@ -4,7 +4,7 @@ const GAMELOG = true;
 const reset = false;
 const safeCoefficient = 1.5; // recommended value: 1-2.5 - should be higher for low std, and lower for high std. low std= <15, high std >15
 const limits = { attack: 7 }; // recommended value: 5-10 - Sends Y attacks within a interval. Should be safe up to 15, but should revise if you have a high attack speed.
-const samples = 50; // recommended value: 20-100 - the higher the value, the more rigid to lag spikes. Should be safe with both 15-500.
+const samples = 20; // recommended value: 20-100 - the higher the value, the more rigid to lag spikes. Should be safe with both 15-500.
 const minimumAttackMS = 150; // recommended value: Sets the minimum attack speed overall. 100ms good.
 const whileLocker = false; // experimental, if you want to block code until timing is achieved as opposed of rely on setTimeout(0)
 
