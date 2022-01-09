@@ -1,9 +1,9 @@
 // settings
-const DEBUGLOG = true;
+const DEBUGLOG = false;
 const GAMELOG = true;
 const reset = false;
 const limits = { attack: 7 }; // recommended value: 5-10 - Sends Y attacks within a interval. Should be safe up to 15, but should revise if you have a high attack speed.
-const samples = 50; // recommended value: 20-100 - the higher the value, the more rigid to lag spikes. Should be safe with both 15-500.
+const samples = 30; // recommended value: 20-100 - the higher the value, the more rigid to lag spikes. Should be safe with both 15-500.
 const minimumAttackMS = 150; // recommended value: Sets the minimum attack speed overall. 100ms good.
 const whileRacer = false; // experimental, if you want to block code until timing is achieved as opposed of rely on setTimeout(0)
 
