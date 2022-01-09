@@ -195,15 +195,3 @@ window.attack = newAttack;
 
 !window.oldUse_skill && (window.oldUse_skill = use_skill); // save old attack
 window.use_skill = newUse_skill;
-
-setInterval(async () => {
-  const target = get_target() || get_nearest_monster('target_a500') || get_nearest_monster('target_a750');
-
-  if (target && is_in_range(target, 'attack')) {
-    await attack(target);
-  }
-}, 50);
-
-setInterval(() => {
-  if (character.mp / character.max_mp < 0.90) use('use_mp'); // issue sharing cd
-}, 800);
