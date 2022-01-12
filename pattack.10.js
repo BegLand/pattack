@@ -38,8 +38,8 @@ function calculatePingTolerance(attackspeedTolerance, maxpingTolerance) {
   const attackSpeedMS = (1 / character.frequency) * 1000 * attackspeedTolerance;
   const maxRecentPing = Math.max(...parent.pings) * maxpingTolerance;
 
-  if (attackSpeedMS < maxRecentPing && attackSpeedMS < maxRecentPing) return attackSpeedMS;
-  if (MINIMUM_ATTACK_MS < maxRecentPing) return MINIMUM_ATTACK_MS;
+  if (attackSpeedMS < maxRecentPing || attackSpeedMS < MINIMUM_ATTACK_MS) return attackSpeedMS;
+  if (MINIMUM_ATTACK_MS > maxRecentPing) return MINIMUM_ATTACK_MS;
   return maxRecentPing;
 }
 
