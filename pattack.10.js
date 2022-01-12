@@ -1,11 +1,13 @@
 // settings
 const DEBUGLOG = false;
 const GAMELOG = true;
-const reset = false;
-const limits = { attack: 7 }; // recommended value: 5-10 - Sends Y attacks within a interval. Should be safe up to 15, but should revise if you have a high attack speed.
-const samples = 30; // recommended value: 20-100 - the higher the value, the more rigid to lag spikes. Should be safe with both 15-500.
-const minimumAttackMS = 150; // recommended value: Sets the minimum attack speed overall. 100ms good.
-const whileRacer = false; // experimental, if you want to block code until timing is achieved as opposed of rely on setTimeout(0)
+const RESET = true; // set to false, if you don't want 20 move spinup time. Should work quite optimal with true, but if you want same performance when you engage/disengage then set this to false.
+const LIMITS = { attack: 7 }; // recommended value: 5-10 - Sends Y attacks within a interval. Should be safe up to 15, but should revise if you have a high attack speed.
+const SAMPLES = 30; // recommended value: 20-100 - the higher the value, the more rigid to lag spikes. Should be safe with both 15-500.
+const MINIMUM_ATTACK_MS = 150; // recommended value: Sets the minimum unlock speed overall. If ping is very high, this value could forces the minimum, however the minimum is 1.5 * max ping.  @earthiverse feature
+const WHILE_RACER = false; // experimental, if you want to block code until timing is achieved as opposed of rely on setTimeout(0)
+
+const version = '0.2.1';
 
 // global variables /puke
 const _lock = {};
@@ -27,7 +29,18 @@ function safetyCoefficientSmootherer(x) {
   return (0.0005 * x) ** 2 - (0.057 * x) + 2.7727;
 }
 function schedulingTiming() {
-  return -1 * Math.min((1 / character.frequency) * 1000 * 0.8, Math.max(Math.max(...parent.pings) * 1.5, minimumAttackMS)); // never lower than attack speed, but higher than ping, or default
+  return -1 * calculatePingTolerance(0.9, 1.6);
+}
+function maxPingAllowed() {
+  return calculatePingTolerance(0.8, 1.5);
+}
+function calculatePingTolerance(attackspeedTolerance, maxpingTolerance) {
+  const attackSpeedMS = (1 / character.frequency) * 1000 * attackspeedTolerance;
+  const maxRecentPing = Math.max(...parent.pings) * maxpingTolerance;
+
+  if (attackSpeedMS < maxRecentPing && attackSpeedMS < maxRecentPing) return attackSpeedMS;
+  if (MINIMUM_ATTACK_MS < maxRecentPing) return MINIMUM_ATTACK_MS;
+  return maxRecentPing;
 }
 
 // cooldown functions
@@ -67,6 +80,7 @@ function record(v, miss, i, attempt) {
   if (needle % 10 === 0) {
     set(`pattack${character.id}`, samplesTimes);
     set(`pattackNeedle${character.id}`, needle);
+    set(`pattackVersion${character.id}`, version);
   }
   DEBUGLOG && console.log(`Logging ${v}ms i:${i + 1}/${attempt} jsLag:${miss}ms`);
   GAMELOG && game_log(`Logging ${v}ms i:${i + 1}/${attempt} jsLag:${miss}ms`);
@@ -83,13 +97,13 @@ function isLocked(skill) {
 }
 
 function resetLock(skill) {
-  _lock[getCDName(skill)] = 0;
+  _lock[getCDName(skill)] = new Date(0);
   return 0;
 }
 
 // pattack logic functions
 function _use(skill, target, extra_args) {
-  /* enable target switching to last second */targets[skill] = { target, extra_args };
+  targets[skill] = { target, extra_args };/* enable target switching to last second */
   if (!parent.next_skill) {
     return Promise.reject(new Error('Something is strange - Wait for parent.next_skill to init'));
   }
@@ -114,14 +128,14 @@ function getPTiming(cooldownTime, skill) {
 
   const min = av - Math.max(3, safetyCoefficientSmootherer(st) * st);
   const max = av + Math.max(3, safetyCoefficientSmootherer(st) * st);
-
-  const amin = Math.max(0, Math.min(300, min)); // make sure it's between good pings, -300 and 0, things get wierd when ping > attackspeed
-  const amax = Math.max(0, Math.min(300, max));
+  const maxPing = maxPingAllowed();
+  const amin = Math.max(0, Math.min(maxPing, min)); // make sure it's between good pings, -300 and 0, things get wierd when ping > attackspeed
+  const amax = Math.max(0, Math.min(maxPing, max));
 
   const spamTimeStart = cooldownTime - amax;
   const spamTimeEnd = cooldownTime - amin;
 
-  const attemptLimit = limits[skill] || 5;
+  const attemptLimit = LIMITS[skill] || 5;
   const targetMS = 1;
 
   const interval = spamTimeEnd - spamTimeStart;
@@ -162,7 +176,7 @@ function _pTiming(skill) {
         return setTimeout(timer, 0);
       }
       trackI += 1;
-      while (whileRacer && nowTime - timing < -1) { // race until exact MS, if whileLocker is enabled
+      while (WHILE_RACER && nowTime - timing < -1) { // race until exact MS, if whileLocker is enabled
         nowTime = new Date().getTime();
       }
       const value = cooldownTime - nowTime;
@@ -174,7 +188,7 @@ function _pTiming(skill) {
         results[i] = true;
         resolve();
         record(value, nowTime - timing, i, pTiming.attempts);
-        DEBUGLOG && console.log(`Success ${skill}: \tattempt ${i + 1} out of ${results.length} sent. Maximum allowed attempts: ${limits[skill]} \tvalue ${Math.floor(value)} \t${Math.floor(inc)} MS:${pTiming.sliceSize} \tDiff ${Math.floor(pTiming.meta.amax - pTiming.meta.amin)} \tmin ${Math.floor(pTiming.meta.amin)} \tmax ${Math.floor(pTiming.meta.amax)} \tav${Math.floor(pTiming.meta.av)} \tstd${Math.floor(pTiming.meta.st)}`);
+        DEBUGLOG && console.log(`Success ${skill}: \tattempt ${i + 1} out of ${results.length} sent. Maximum allowed attempts: ${LIMITS[skill]} \tvalue ${Math.floor(value)} \t${Math.floor(inc)} MS:${pTiming.sliceSize} \tDiff ${Math.floor(pTiming.meta.amax - pTiming.meta.amin)} \tmin ${Math.floor(pTiming.meta.amin)} \tmax ${Math.floor(pTiming.meta.amax)} \tav${Math.floor(pTiming.meta.av)} \tstd${Math.floor(pTiming.meta.st)}`);
       }
       function fail(e) {
         results[i] = false;
@@ -183,22 +197,22 @@ function _pTiming(skill) {
         if (isLastAttempt && hasNoSuccessAttempts && e.reason === 'cooldown') { // and no attempt succeeded
           const remaining = e.remaining || 0;
           record(value - remaining, nowTime - timing, i, pTiming.attempts);
-          reattemptAttack();
-          DEBUGLOG && console.log(`Failed ${skill}: \tattempt ${i + 1} out of ${results.length} sent. Maximum allowed attempts: ${limits[skill]} \tvalue ${Math.floor(value)} \t${Math.floor(inc)} MS:${pTiming.sliceSize} \tDiff ${Math.floor(pTiming.meta.amax - pTiming.meta.amin)} \tmin ${Math.floor(pTiming.meta.amin)} \tmax ${Math.floor(pTiming.meta.amax)} \tav${Math.floor(pTiming.meta.av)} \tstd${Math.floor(pTiming.meta.st)}`);
+          reattemptAttack(value - remaining);
+          DEBUGLOG && console.log(`Failed ${skill}: \tattempt ${i + 1} out of ${results.length} sent. Maximum allowed attempts: ${LIMITS[skill]} \tvalue ${Math.floor(value)} \t${Math.floor(inc)} MS:${pTiming.sliceSize} \tDiff ${Math.floor(pTiming.meta.amax - pTiming.meta.amin)} \tmin ${Math.floor(pTiming.meta.amin)} \tmax ${Math.floor(pTiming.meta.amax)} \tav${Math.floor(pTiming.meta.av)} \tstd${Math.floor(pTiming.meta.st)}`);
         } else if (isLastAttempt && hasNoSuccessAttempts) { // if some other reason fails
           DEBUGLOG && console.log(e);
-          reattemptAttack();
+          reattemptAttack(value);
         } else {
 
         }
       }
-      function reattemptAttack() {
+      function reattemptAttack(ms) {
         setTimeout(() => {
           _use_skill(skill, targets[skill].target, targets[skill].extra_args).then(resolve, () => {
             reject();
             resetLock();
           });
-        }, cooldownTime - nowTime);
+        }, cooldownTime - ms * 0.8 - nowTime);
       }
       function scheduleNext() {
         if (i + 1 >= pTiming.attempts) {
@@ -234,16 +248,23 @@ function fixCorruptedSampleValues() {
     }
   }
 }
+
 function loadSavedSamples() {
   const savedNeedle = get(`pattackNeedle${character.id}`);
   const savedSample = get(`pattack${character.id}`);
+  const savedVersion = get(`pattackVersion${character.id}`);
+  if (savedVersion !== version) {
+    needle = 0;
+    samplesTimes = new Array(SAMPLES);
+    return;
+  }
   needle = savedNeedle || 0;
-  samplesTimes = savedSample || new Array(samples);
+  samplesTimes = savedSample || new Array(SAMPLES);
 }
 
 function resetSamples() {
-  if (reset || !samplesTimes) {
-    samplesTimes = new Array(samples); // the lower this number, the more responsive
+  if (RESET || !samplesTimes) {
+    samplesTimes = new Array(SAMPLES); // the lower this number, the more responsive
     const spans = [Math.max(...parent.pings) * 1.5, Math.min(...parent.pings) * 1.5];
     const interval = spans[1] - spans[0];
     for (let i = 0; i < samplesTimes.length; i += 1) {
