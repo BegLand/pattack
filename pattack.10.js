@@ -240,7 +240,7 @@ function _use_skill(skill, target, extra_args) {
 function fixCorruptedSampleValues() {
   if (samplesTimes) {
     for (let i = 0; i < samplesTimes.length; i += 1) {
-      if (typeof samplesTimes[i] !== 'number') {
+      if (typeof samplesTimes[i] !== 'number' || samplesTimes[i] < 0) {
         samplesTimes = undefined;
         /* cleanup if savedSample is corrupt */
         break;
@@ -255,11 +255,11 @@ function loadSavedSamples() {
   const savedVersion = get(`pattackVersion${character.id}`);
   if (savedVersion !== version) {
     needle = 0;
-    samplesTimes = new Array(SAMPLES);
+    samplesTimes = undefined;
     return;
   }
   needle = savedNeedle || 0;
-  samplesTimes = savedSample || new Array(SAMPLES);
+  samplesTimes = savedSample;
 }
 
 function resetSamples() {
