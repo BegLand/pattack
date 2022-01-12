@@ -1,7 +1,7 @@
 // settings
 const DEBUGLOG = false;
 const GAMELOG = true;
-const RESET = true; // set to false, if you don't want 20 move spinup time. Should work quite optimal with true, but if you want same performance when you engage/disengage then set this to false.
+const RESET = false; // set to false, if you don't want 20 move spinup time. Should work quite optimal with true, but if you want same performance when you engage/disengage then set this to false.
 const LIMITS = { attack: 7 }; // recommended value: 5-10 - Sends Y attacks within a interval. Should be safe up to 15, but should revise if you have a high attack speed.
 const SAMPLES = 30; // recommended value: 20-100 - the higher the value, the more rigid to lag spikes. Should be safe with both 15-500.
 const MINIMUM_ATTACK_MS = 150; // recommended value: Sets the minimum unlock speed overall. If ping is very high, this value could forces the minimum, however the minimum is 1.5 * max ping.  @earthiverse feature
