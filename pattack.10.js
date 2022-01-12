@@ -62,11 +62,17 @@ function hookAttack() {
   !window.oldAttack && (window.oldAttack = attack); // save old attack
   window.attack = newAttack;
 
+  !window.oldHeal && (window.oldHeal = heal); // save old attack
+  window.heal = newHeal;
+
   !window.oldUse_skill && (window.oldUse_skill = use_skill); // save old attack
   window.use_skill = newUse_skill;
 }
 function newAttack(target) {
   return _use('attack', target);
+}
+function newHeal(target) {
+  return _use('heal', target);
 }
 function newUse_skill(skill, target, extra_args) {
   return _use(skill, target, extra_args);
@@ -103,7 +109,7 @@ function resetLock(skill) {
 
 // pattack logic functions
 function _use(skill, target, extra_args) {
-  targets[skill] = { target, extra_args };/* enable target switching to last second */
+  targets[getCDName(skill)] = { skill, target, extra_args };/* enable target switching to last second */
   if (!parent.next_skill) {
     return Promise.reject(new Error('Something is strange - Wait for parent.next_skill to init'));
   }
@@ -119,7 +125,7 @@ function _use(skill, target, extra_args) {
   }
   if (isLocked(skill)) return Promise.reject(new Error(`cooldown locked: ${skill}`));
   lock(skill); // lock function until attack changes, also remeber the timer which is what we compare with
-  return _pTiming(skill, target, extra_args);
+  return _pTiming(skill);
 }
 
 function getPTiming(cooldownTime, skill) {
@@ -155,10 +161,9 @@ function getPTiming(cooldownTime, skill) {
 function _pTiming(skill) {
   const cooldownTime = getCD(skill).getTime();
   const pTiming = getPTiming(cooldownTime, skill);
-
   if (Date.now() >= cooldownTime) {
     DEBUGLOG && console.log(`Instant skip queue -  ${skill}: \tmin ${Math.floor(pTiming.meta.amin)} \tmax ${Math.floor(pTiming.meta.amax)} \tav${Math.floor(pTiming.meta.av)} \tstd${Math.floor(pTiming.meta.st)}`);
-    return _use_skill(skill, targets[skill].target, targets[skill].extra_args);
+    return _use_skill(skill);
   }
   const results = new Array(pTiming.attempts).fill(false);
   DEBUGLOG && console.log('Loop start \n ---------------', _lock[skill].getTime(), Date.now() - _lock[skill].getTime());
@@ -180,7 +185,7 @@ function _pTiming(skill) {
         nowTime = new Date().getTime();
       }
       const value = cooldownTime - nowTime;
-      _use_skill(skill, targets[skill].target, targets[skill].extra_args).then(success, fail);
+      _use_skill(skill).then(success, fail);
       scheduleNext();
       return 0;
 
@@ -208,7 +213,7 @@ function _pTiming(skill) {
       }
       function reattemptAttack(ms) {
         setTimeout(() => {
-          _use_skill(skill, targets[skill].target, targets[skill].extra_args).then(resolve, () => {
+          _use_skill(skill).then(resolve, () => {
             reject();
             resetLock();
           });
@@ -230,9 +235,11 @@ function _pTiming(skill) {
     }
   });
 }
-function _use_skill(skill, target, extra_args) {
-  if (skill === 'attack') { return oldAttack(target); }
-  return oldUse_skill(skill, target, extra_args);
+function _use_skill(skill) {
+  const skillArgs = targets[getCDName(skill)];
+  if (skillArgs.skill === 'attack') { return oldAttack(skillArgs.target); }
+  if (skillArgs.skill === 'heal') { return oldHeal(skillArgs.target); }
+  return oldUse_skill(skillArgs.skill, skillArgs.target, skillArgs.extra_args);
 }
 
 // init
