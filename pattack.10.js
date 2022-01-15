@@ -63,7 +63,7 @@ function hookAttack() {
   window.attack = newAttack;
 
   !window.oldUse_skill && (window.oldUse_skill = use_skill); // save old attack
-  window.use_skill = newUse_skill;
+  //window.use_skill = newUse_skill;
 }
 function newAttack(target) {
   return _use('attack', target);
